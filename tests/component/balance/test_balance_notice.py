@@ -1,9 +1,11 @@
 import allure
+import pytest
 
 from framework.services import BalanceService
 
 
 @allure.title("Порог баланса: получение")
+@pytest.mark.smoke
 def test_get_balance_notice_positive(balance_service: BalanceService) -> None:
     # Arrange
     service = balance_service

@@ -1,7 +1,7 @@
 # Test Automation Framework
 
 [![Release](https://img.shields.io/github/v/release/codegenIrlX/cdg-automation-framework?style=flat-square&label=release)](https://github.com/codegenIrlX/cdg-automation-framework/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/codegenIrlX/cdg-automation-framework/ci.yml?style=flat-square)](https://github.com/codegenIrlX/cdg-automation-framework/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/codegenIrlX/cdg-automation-framework/smoke-tests.yml?style=flat-square)](https://github.com/codegenIrlX/cdg-automation-framework/actions)
 [![Last commit](https://img.shields.io/github/last-commit/codegenIrlX/cdg-automation-framework?style=flat-square)](https://github.com/codegenIrlX/cdg-automation-framework/commits/main)
 
 ## Базовые требования Plusofon API
