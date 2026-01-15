@@ -1,13 +1,9 @@
-import uuid
-
 import pytest
 from loguru import logger
 from pika.exceptions import AMQPConnectionError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from framework.clients import RabbitMQClient
-from framework.clients.db import create_engine_from_dsn, create_session_factory
 from framework.config import settings
 from framework.services import BalanceService
 from framework.utils.logger import setup_logger
