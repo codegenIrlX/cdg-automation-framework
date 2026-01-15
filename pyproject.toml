@@ -1,10 +1,10 @@
 [project]
-name = "sipplus-automation-framework"
-version = "0.1.0"
-description = "Scalable API test automation framework template for Plusofon"
+name = "cdg-automation-framework"
+version = "1.1.0"
+description = "Scalable API test automation framework"
 requires-python = ">=3.11"
 readme = "README.md"
-authors = [{ name = "Sipplus QA" }]
+authors = [{ name = "Dmitriy Tikhonov" }]
 license = { file = "LICENSE" }
 dependencies = [
     "pytest>=8.3.0",
