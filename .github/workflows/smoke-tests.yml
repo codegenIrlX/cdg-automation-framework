@@ -2,7 +2,7 @@ name: smoke-tests
 
 on:
   push:
-    branches: ["main, ""dev"]
+    branches: ["main", "dev"]
 
 jobs:
   smoke:
