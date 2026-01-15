@@ -3,8 +3,6 @@ name: smoke-tests
 on:
   push:
     branches: ["dev"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
   smoke:
