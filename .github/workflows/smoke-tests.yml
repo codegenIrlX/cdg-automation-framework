@@ -1,0 +1,35 @@
+name: smoke-tests
+
+on:
+  push:
+    branches: ["dev"]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Run smoke tests
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          TIMEOUT_SECONDS: ${{ secrets.TIMEOUT_SECONDS }}
+          VERIFY_SSL: ${{ secrets.VERIFY_SSL }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
+        run: |
+          pytest -m smoke --alluredir=allure-results
