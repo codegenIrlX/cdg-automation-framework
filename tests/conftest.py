@@ -6,11 +6,11 @@ from pika.exceptions import AMQPConnectionError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from sipplus_framework.clients import RabbitMQClient
-from sipplus_framework.clients.db import create_engine_from_dsn, create_session_factory
-from sipplus_framework.config import settings
-from sipplus_framework.services import BalanceService
-from sipplus_framework.utils.logger import setup_logger
+from framework.clients import RabbitMQClient
+from framework.clients.db import create_engine_from_dsn, create_session_factory
+from framework.config import settings
+from framework.services import BalanceService
+from framework.utils.logger import setup_logger
 
 
 @pytest.fixture(scope="session", autouse=True)

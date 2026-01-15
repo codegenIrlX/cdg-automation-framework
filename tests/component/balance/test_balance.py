@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from sipplus_framework.services import BalanceService
+from framework.services import BalanceService
 
 
 @allure.title("Баланс: получение текущего баланса")

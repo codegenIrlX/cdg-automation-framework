@@ -5,8 +5,8 @@ import httpx
 from loguru import logger
 from pydantic import ValidationError
 
-from sipplus_framework.clients.base_client import BaseAPIClient
-from sipplus_framework.schemas import BalanceNoticeResponse, BalanceResponse
+from framework.clients.base_client import BaseAPIClient
+from framework.schemas import BalanceNoticeResponse, BalanceResponse
 
 
 class BalanceService:
