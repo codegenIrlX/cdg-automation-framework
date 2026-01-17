@@ -1,4 +1,4 @@
-# Документация по **pydantic** и **pydantic-settings**
+# Документация: **pydantic** и **pydantic-settings**
 
 ---
 
