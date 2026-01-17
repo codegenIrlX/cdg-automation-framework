@@ -37,7 +37,7 @@
   - [6.3. Indirect параметризация (передать параметр в фикстуру)](#63-indirect-параметризация-передать-параметр-в-фикстуру)
 - [7. Маркировка тестов (Markers)](#7-маркировка-тестов-markers)
   - [7.1. Использование `@pytest.mark.<tag>`](#71-использование-pytestmarktag)
-  - [7.2) Запуск маркированных тестов через CLI](#72-запуск-маркированных-тестов-через-cli)
+  - [7.2. Запуск маркированных тестов через CLI](#72-запуск-маркированных-тестов-через-cli)
   - [7.3. Регистрация маркеров (важно!)](#73-регистрация-маркеров-важно)
 - [8. Полезные команды CLI и best practices](#8-полезные-команды-cli-и-best-practices)
   - [Полезные команды](#полезные-команды)
@@ -46,7 +46,13 @@
   - [Пример структуры проекта](#пример-структуры-проекта)
   - [Что хранить в `conftest.py`](#что-хранить-в-conftestpy)
   - [Что не хранить в `conftest.py`](#что-не-хранить-в-conftestpy)
-- [10. Полезные ссылки](#10-полезные-ссылки)
+- [10. Настройка pytest.ini и работа с окружениями](#10-настройка-pytestini-и-работа-с-окружениями)
+  - [10.1. Зачем нужен `pytest.ini` в автоматизации](#101-зачем-нужен-pytestini-в-автоматизации)
+  - [10.2. Базовый пример и разбор параметров](#102-базовый-пример-и-разбор-параметров)
+  - [10.3. Разные `.env` для dev/stage/prod](#103-разные-env-для-devstageprod)
+  - [10.4. Другие полезные параметры `pytest.ini`](#104-другие-полезные-параметры-pytestini)
+  - [10.5. Рекомендации: один `pytest.ini` гибкость через env vars](#105-рекомендации-один-pytestini-гибкость-через-env-vars)
+- [11. Полезные ссылки](#11-полезные-ссылки)
 - [Приложение: Мини-шпаргалка команды запуска](#приложение-мини-шпаргалка-команды-запуска)
 
 
@@ -590,8 +596,132 @@ project/
 - слишком специфичные фикстуры, которые нужны только одному файлу (лучше держать рядом).
 
 ---
+## 10. Настройка pytest.ini и работа с окружениями
 
-## 10. Полезные ссылки
+### 10.1. Зачем нужен `pytest.ini` в автоматизации
+`pytest.ini` — конфигурационный файл pytest. Он помогает:
+- закрепить **единые правила запуска** тестов для всей команды (локально и в CI),
+- централизованно задать **пути поиска тестов**, **опции CLI по умолчанию**, **маркеры**, **логи**, **warnings**,
+- убрать «магические» различия между окружениями разработчиков.
+
+> `pytest.ini` управляет настройками pytest. Загрузка `.env` файлов обычно делается через **плагины** (например, `pytest-dotenv`) или через ваш `settings.py` (pydantic-settings), который читает переменные окружения.
+
+---
+
+### 10.2. Базовый пример и разбор параметров
+```ini
+[pytest]
+pythonpath = . src
+env_files =
+    .test.env
+```
+
+#### `pythonpath = . src`
+Добавляет пути в `sys.path`:
+- `.` — корень репозитория,
+- `src` — директория исходников (src-layout).
+
+Это упрощает импорты в тестах и коде:
+```python
+from app.clients.api import ApiClient
+```
+
+#### `env_files = ...`
+Это **не стандартный параметр pytest**. Он появляется при использовании плагина для загрузки `.env` (часто `pytest-dotenv`).
+Pytest при старте загрузит переменные окружения из указанных файлов (например, `.test.env`).
+
+Рекомендации:
+- в репозитории держите `.env.example`,
+- секреты храните в CI secrets / vault,
+- локальные `.env` должны быть безопасными.
+
+---
+
+### 10.3. Разные `.env` для dev/stage/prod
+
+#### Вариант A: CLI + pydantic-settings (рекомендуется)
+Запуск:
+```bash
+ENV_FILE=.stage.env pytest
+ENV_FILE=.prod.env pytest -m smoke
+```
+
+Идея в `settings.py`:
+```python
+import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=os.getenv("ENV_FILE", ".test.env"))
+```
+
+#### Вариант B: скрипт-обёртка
+**bash**:
+```bash
+#!/usr/bin/env bash
+export ENV_FILE=${ENV_FILE:-.test.env}
+pytest "$@"
+```
+
+**PowerShell**:
+```powershell
+$env:ENV_FILE = $env:ENV_FILE ?? ".test.env"
+pytest @args
+```
+
+---
+
+### 10.4. Другие полезные параметры `pytest.ini`
+
+#### `addopts` — глобальные опции запуска
+```ini
+[pytest]
+addopts = -ra --strict-markers --tb=short
+```
+
+#### `markers` — описание кастомных меток
+```ini
+[pytest]
+markers =
+    smoke: быстрые проверки критического пути
+    regression: регрессионные тесты
+    slow: долгие тесты
+```
+
+#### `log_cli`, `log_level`, `log_format` — настройка логов
+```ini
+[pytest]
+log_cli = true
+log_level = INFO
+log_format = %(asctime)s | %(levelname)s | %(name)s | %(message)s
+log_date_format = %Y-%m-%d %H:%M:%S
+```
+
+#### `filterwarnings` — управление предупреждениями
+```ini
+[pytest]
+filterwarnings =
+    error::DeprecationWarning
+    ignore:.*distutils.*:DeprecationWarning
+```
+
+#### Другие полезные настройки
+- `testpaths = tests`
+- `norecursedirs = .git .venv build dist`
+- `xfail_strict = true`
+- `python_files / python_classes / python_functions` (если нужно кастомизировать discovery)
+
+---
+
+### 10.5. Рекомендации: один `pytest.ini` гибкость через env vars
+- Держите **один** `pytest.ini` в корне репозитория.
+- Всё, что зависит от окружения (URL/креды/таймауты), задавайте через **переменные окружения** и `settings.py`.
+- В `pytest.ini` фиксируйте общее: `markers`, `addopts`, `testpaths`, правила логов/warnings.
+- В CI переключайте окружения через `ENV_FILE` и CI secrets.
+
+---
+
+## 11. Полезные ссылки
 - Официальная документация pytest
 - Fixtures: фикстуры и scope
 - Markers: маркировка и фильтрация
