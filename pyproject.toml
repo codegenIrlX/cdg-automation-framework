@@ -1,6 +1,6 @@
 [project]
 name = "cdg-automation-framework"
-version = "1.1.0"
+version = "1.2.0"
 description = "Scalable API test automation framework"
 requires-python = ">=3.11"
 readme = "README.md"
