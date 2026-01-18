@@ -6,27 +6,24 @@
 
 ## Оглавление
 
-- [Введение](#введение)
-- [Документация](#документация)
-- [Базовые требования Plusofon API](#базовые-требования-plusofon-api)
-  - [Коды статусов и ошибок](#коды-статусов-и-ошибок)
-- [Быстрый старт](#быстрый-старт)
-- [Docker Compose](#docker-compose)
-  - [Предусловия](#предусловия)
-  - [Быстрый старт](#быстрый-старт-1)
-  - [Сервисы и порты](#сервисы-и-порты)
-  - [Переменные окружения](#переменные-окружения)
-  - [Healthcheck](#healthcheck)
-  - [Инициализация PostgreSQL (seed/DDL)](#инициализация-postgresql-seedddl)
-  - [Остановка и очистка](#остановка-и-очистка)
-  - [Полезные команды](#полезные-команды)
-- [.env переменные](#env-переменные)
+- [1. Документация](#1-документация)
+- [2. Базовые требования Plusofon API](#2-базовые-требования-plusofon-api)
+  - [2.1. Коды статусов и ошибок](#21-коды-статусов-и-ошибок)
+- [3. Быстрый старт](#3-быстрый-старт)
+  - [3.1 Отчеты Allure (Windows)](#31-отчеты-allure-windows)
+- [4. Docker Compose](#4-docker-compose)
+  - [4.1. Предусловия](#41-предусловия)
+  - [4.2. Быстрый старт](#42-быстрый-старт)
+  - [4.3. Развернутые сервисы](#43-развернутые-сервисы)
+  - [4.4. Сервисы и порты](#44-сервисы-и-порты)
+  - [4.5. Переменные окружения](#45-переменные-окружения)
+  - [4.6. Healthcheck](#46-healthcheck)
+  - [4.7. Инициализация PostgreSQL (seed/DDL)](#47-инициализация-postgresql-seedddl)
+  - [4.8. Остановка и очистка](#48-остановка-и-очистка)
+  - [4.9. Полезные команды](#49-полезные-команды)
+- [5. .env переменные](#5-env-переменные)
 
-## Введение
-
-Данный тестовый фреймворк демонстрирует подходы к автоматизации интеграционных проверок: работу с **REST API**, асинхронными сообщениями через **RabbitMQ**, взаимодействие с **базами данных** и обработку событий/стримов через **Kafka**.
-
-## Документация
+## 1. Документация
 
 | Название | Ссылка на документацию |
 | --- | --- |
@@ -39,14 +36,14 @@
 | Фреймворк / Pytest | [Документация по Pytest](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/pytest) |
 | Тест-кейсы | [Документация по тест-кейсам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/test_cases) |
 
-## Базовые требования Plusofon API
+## 2. Базовые требования Plusofon API
 
 - [Документация по работе с API](https://help.plusofon.ru/api/v1)
 - Адрес: `https://restapi.plusofon.ru`
 - Авторизация: тип `Bearer Token`
 - Обязательный заголовок `Client`: значение `10553`
 
-### Коды статусов и ошибок
+### 2.1. Коды статусов и ошибок
 
 | Код | Описание |
 | --- | --- |
@@ -56,22 +53,42 @@
 | 404 | целевая сущность не найдена |
 | 500 | нет доступа |
 
-## Быстрый старт
+## 3. Быстрый старт
 
 1. Скопировать `.env.example` в `.env` и заполнить значения.
 2. Установить зависимости: `python -m pip install -e .`
 3. Запустить тесты: `pytest`.
 4. Если IDE подсвечивает импорты, отметить `src` как **Sources Root** и выполнить **Invalidate Caches / Restart**.
 
-## Docker Compose
+### 3.1. Отчеты Allure (Windows)
 
-Для локального запуска инфраструктуры (PostgreSQL + RabbitMQ) используется файл `docker-compose.yml`.
+Установка Allure в Windows (через Scoop):
 
-### Предусловия
+```bash
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+irm get.scoop.sh | iex
+scoop install allure
+allure --version
+```
+
+Генерация и отображение отчета Allure:
+
+```bash
+pytest --alluredir=allure-results
+allure serve allure-results
+```
+
+## 4. Docker Compose
+
+Для локального запуска инфраструктуры (PostgreSQL + RabbitMQ + Kafka + Kafka UI) используется файл `docker-compose.yml`.
+
+### 4.1. Предусловия
+
 - Установлен Docker Desktop / Docker Engine
 - Доступна команда `docker compose` (Compose v2)
 
-### Быстрый старт
+### 4.2. Быстрый старт
+
 ```bash
 # поднять сервисы в фоне
 docker compose up -d
@@ -83,34 +100,53 @@ docker compose ps
 docker compose logs -f
 ```
 
-### Сервисы и порты
+### 4.3. Развернутые сервисы
+
+| Сервис | URL | Описание |
+| --- | --- | --- |
+| RabbitMQ UI | http://localhost:15672 | Web UI для просмотра очередей/сообщений и управления RabbitMQ |
+| Kafka UI | http://localhost:8080 | Web UI для просмотра кластеров/топиков/сообщений Kafka |
+| PostgreSQL | `127.0.0.1:5432` | Подключение к БД (например, через psql/IDE/DB-клиент) |
+
+### 4.4. Сервисы и порты
+
 - **PostgreSQL**: `127.0.0.1:5432` (image: `postgres:16-alpine`)
 - **RabbitMQ**: `127.0.0.1:5672` (AMQP) и `127.0.0.1:15672` (Management UI) (image: `rabbitmq:3-management`)
+- **Kafka**: `127.0.0.1:9092` (Broker) (image: зависит от compose)
+- **Kafka UI**: `http://localhost:8080` (Web UI) (image: зависит от compose)
 
 > Порты проброшены только на `127.0.0.1`, поэтому сервисы доступны **только локально**.
 
-### Переменные окружения
+### 4.5. Переменные окружения
+
 `docker-compose.yml` ожидает переменные из `.env` (или из окружения), например:
+
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
 - `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `RABBITMQ_VHOST`
 
-### Healthcheck
+### 4.6. Healthcheck
+
 В compose настроены healthcheck’и:
+
 - PostgreSQL: `pg_isready`
 - RabbitMQ: `rabbitmq-diagnostics check_running`
 
 Статус можно увидеть через:
+
 ```bash
 docker compose ps
 ```
 
-### Инициализация PostgreSQL (seed/DDL)
+### 4.7. Инициализация PostgreSQL (seed/DDL)
+
 При старте контейнера PostgreSQL монтируется каталог:
+
 - `./docker-entrypoint-initdb.d` → `/docker-entrypoint-initdb.d` (read-only)
 
 Положите туда `.sql`/`.sh` файлы — они выполнятся **один раз** при первом создании volume.
 
-### Остановка и очистка
+### 4.8. Остановка и очистка
+
 ```bash
 # остановить сервисы
 docker compose down
@@ -119,7 +155,8 @@ docker compose down
 docker compose down -v
 ```
 
-### Полезные команды
+### 4.9. Полезные команды
+
 ```bash
 # пересобрать (если есть build-секции) и перезапустить
 docker compose up -d --force-recreate
@@ -127,9 +164,12 @@ docker compose up -d --force-recreate
 # перезапустить один сервис
 docker compose restart postgres
 docker compose restart rabbitmq
+
+# создать Kafka-топик вручную (для тестирования)
+docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:9092 --create --topic test.topic --partitions 1 --replication-factor 1"
 ```
 
-## .env переменные
+## 5. .env переменные
 
 | Переменная | Описание |
 | --- |----------|
