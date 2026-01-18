@@ -8,33 +8,36 @@
 
 - [1. Документация](#1-документация)
 - [2. Базовые требования Plusofon API](#2-базовые-требования-plusofon-api)
-  - [2.1. Коды статусов и ошибок](#21-коды-статусов-и-ошибок)
+    - [2.1. Коды статусов и ошибок](#21-коды-статусов-и-ошибок)
 - [3. Быстрый старт](#3-быстрый-старт)
-  - [3.1 Отчеты Allure (Windows)](#31-отчеты-allure-windows)
+    - [3.1 Отчеты Allure (Windows)](#31-отчеты-allure-windows)
 - [4. Docker Compose](#4-docker-compose)
-  - [4.1. Предусловия](#41-предусловия)
-  - [4.2. Быстрый старт](#42-быстрый-старт)
-  - [4.3. Развернутые сервисы](#43-развернутые-сервисы)
-  - [4.4. Сервисы и порты](#44-сервисы-и-порты)
-  - [4.5. Переменные окружения](#45-переменные-окружения)
-  - [4.6. Healthcheck](#46-healthcheck)
-  - [4.7. Инициализация PostgreSQL (seed/DDL)](#47-инициализация-postgresql-seedddl)
-  - [4.8. Остановка и очистка](#48-остановка-и-очистка)
-  - [4.9. Полезные команды](#49-полезные-команды)
+    - [4.1. Предусловия](#41-предусловия)
+    - [4.2. Быстрый старт](#42-быстрый-старт)
+    - [4.3. Развернутые сервисы](#43-развернутые-сервисы)
+    - [4.4. Сервисы и порты](#44-сервисы-и-порты)
+    - [4.5. Переменные окружения](#45-переменные-окружения)
+    - [4.6. Healthcheck](#46-healthcheck)
+    - [4.7. Инициализация PostgreSQL (seed/DDL)](#47-инициализация-postgresql-seedddl)
+    - [4.8. Остановка и очистка](#48-остановка-и-очистка)
+    - [4.9. Полезные команды](#49-полезные-команды)
 - [5. .env переменные](#5-env-переменные)
 
 ## 1. Документация
 
-| Название | Ссылка на документацию |
-| --- | --- |
-| Python-код | [Документация по Python-коду](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/python) |
-| Фреймворк | [Документация по работе с фреймворком](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework) |
-| Фреймворк / Allure | [Документация по Allure](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/allure) |
-| Фреймворк / Библиотеки | [Документация по библиотекам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/dependencies) |
-| Фреймворк / HTTPX | [Документация по HTTPX](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/httpx) |
-| Фреймворк / Pydantic | [Документация по Pydantic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/pydantic) |
-| Фреймворк / Pytest | [Документация по Pytest](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/pytest) |
-| Тест-кейсы | [Документация по тест-кейсам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/test_cases) |
+| Название                          | Ссылка на документацию                                                                                                      |
+|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Python-код                        | [Документация по Python-коду](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/python)                 |
+|                                   |                                                                                                                             |
+| Фреймворк / Библиотеки            | [Документация по библиотекам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/dependencies) |
+| Фреймворк / Alembic (опционально) | [Документация по Alembic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/alembic)          |
+| Фреймворк / Allure                | [Документация по Allure](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/allure)            |
+| Фреймворк / HTTPX                 | [Документация по HTTPX](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/httpx)              |
+| Фреймворк / Pydantic              | [Документация по Pydantic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/pydantic)        |
+| Фреймворк / Pytest                | [Документация по Pytest](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/pytest)            |
+| Фреймворк / SQLAchemy             | [Документация по SQLAchemy](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/SQLAlchemy)     |
+|                                   |                                                                                                                             |
+| Тест-кейсы                        | [Документация по тест-кейсам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/test_cases)             |
 
 ## 2. Базовые требования Plusofon API
 
@@ -45,13 +48,13 @@
 
 ### 2.1. Коды статусов и ошибок
 
-| Код | Описание |
-| --- | --- |
-| 200 | запрос успешно выполнен |
-| 201 | сущность успешно создана |
+| Код | Описание                    |
+|-----|-----------------------------|
+| 200 | запрос успешно выполнен     |
+| 201 | сущность успешно создана    |
 | 400 | параметр указан некорректно |
 | 404 | целевая сущность не найдена |
-| 500 | нет доступа |
+| 500 | нет доступа                 |
 
 ## 3. Быстрый старт
 
@@ -102,11 +105,11 @@ docker compose logs -f
 
 ### 4.3. Развернутые сервисы
 
-| Сервис | URL | Описание |
-| --- | --- | --- |
+| Сервис      | URL                    | Описание                                                      |
+|-------------|------------------------|---------------------------------------------------------------|
 | RabbitMQ UI | http://localhost:15672 | Web UI для просмотра очередей/сообщений и управления RabbitMQ |
-| Kafka UI | http://localhost:8080 | Web UI для просмотра кластеров/топиков/сообщений Kafka |
-| PostgreSQL | `127.0.0.1:5432` | Подключение к БД (например, через psql/IDE/DB-клиент) |
+| Kafka UI    | http://localhost:8080  | Web UI для просмотра кластеров/топиков/сообщений Kafka        |
+| PostgreSQL  | `127.0.0.1:5432`       | Подключение к БД (например, через psql/IDE/DB-клиент)         |
 
 ### 4.4. Сервисы и порты
 
@@ -171,20 +174,20 @@ docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:90
 
 ## 5. .env переменные
 
-| Переменная | Описание |
-| --- |----------|
-| BASE_URL | -        |
-| API_TOKEN | -        |
-| CLIENT_ID | -        |
-| TIMEOUT_SECONDS | -        |
-| VERIFY_SSL | -        |
-| LOG_LEVEL | -        |
-| POSTGRES_DB | -        |
-| POSTGRES_USER | -        |
+| Переменная        | Описание |
+|-------------------|----------|
+| BASE_URL          | -        |
+| API_TOKEN         | -        |
+| CLIENT_ID         | -        |
+| TIMEOUT_SECONDS   | -        |
+| VERIFY_SSL        | -        |
+| LOG_LEVEL         | -        |
+| POSTGRES_DB       | -        |
+| POSTGRES_USER     | -        |
 | POSTGRES_PASSWORD | -        |
-| DB_ECHO | -        |
-| RABBITMQ_HOST | -        |
-| RABBITMQ_PORT | -        |
-| RABBITMQ_USER | -        |
+| DB_ECHO           | -        |
+| RABBITMQ_HOST     | -        |
+| RABBITMQ_PORT     | -        |
+| RABBITMQ_USER     | -        |
 | RABBITMQ_PASSWORD | -        |
-| RABBITMQ_VHOST | -        |
+| RABBITMQ_VHOST    | -        |
