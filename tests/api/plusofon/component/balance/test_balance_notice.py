@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from framework.services import BalanceService
+from domains.api.plusofon.balance import BalanceService
 
 
 @allure.title("Порог баланса: получение")

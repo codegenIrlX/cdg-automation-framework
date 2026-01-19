@@ -3,8 +3,8 @@ from mimesis import Person
 from sqlalchemy.orm import Session
 from uuid import uuid4
 
-from framework.schemas import UserCreate
-from framework.services import UserRepository, UserService
+from domains.db.users import UserRepository, UserService
+from domains.db.users.contracts import UserCreate
 
 
 @allure.title("Пользователи: запись user_9 присутствует в базе")

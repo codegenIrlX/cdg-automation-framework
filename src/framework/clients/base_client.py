@@ -7,13 +7,16 @@ import httpx
 from loguru import logger
 
 from framework.config import settings
-from framework.config.status_codes import PLUSOFON_STATUS_CODES
 
 
 class BaseAPIClient:
     """Базовый HTTP-клиент с логированием и общей конфигурацией."""
 
-    def __init__(self, transport: httpx.BaseTransport | None = None) -> None:
+    def __init__(
+        self,
+        transport: httpx.BaseTransport | None = None,
+        status_code_map: dict[int, str] | None = None,
+    ) -> None:
         self._client = httpx.Client(
             base_url=settings.base_url,
             timeout=settings.timeout_seconds,
@@ -21,6 +24,7 @@ class BaseAPIClient:
             headers=self._build_headers(),
             transport=transport,
         )
+        self._status_code_map = status_code_map or {}
 
     @staticmethod
     def _build_headers() -> dict[str, str]:
@@ -73,7 +77,7 @@ class BaseAPIClient:
                 body=response.text,
             )
         if response.status_code >= 400:
-            message = PLUSOFON_STATUS_CODES.get(response.status_code, response.text)
+            message = self._status_code_map.get(response.status_code, response.text)
             bound_logger.error(
                 "Код {status_code}: {message}",
                 status_code=response.status_code,

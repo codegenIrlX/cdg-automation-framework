@@ -1,7 +1,7 @@
 import allure
 
 from framework.clients import RabbitMQClient
-from framework.schemas import RabbitMQMessage
+from domains.mq.messaging.contracts import RabbitMQMessage
 
 
 @allure.title("RabbitMQ: создание очереди и публикация сообщения")

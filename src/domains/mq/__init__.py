@@ -1,0 +1,1 @@
+"""MQ domain package."""
