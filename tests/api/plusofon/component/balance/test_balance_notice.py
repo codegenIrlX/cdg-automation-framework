@@ -3,7 +3,8 @@ import pytest
 
 from domains.api.plusofon.balance import BalanceService
 
-
+@allure.parent_suite("API")
+@allure.suite("Balance")
 @allure.title("Порог баланса: получение")
 @pytest.mark.smoke
 def test_get_balance_notice_positive(balance_service: BalanceService) -> None:
