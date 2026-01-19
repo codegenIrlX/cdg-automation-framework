@@ -29,6 +29,8 @@
 |-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | Python-код                        | [Документация по Python-коду](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/python)                 |
 |                                   |                                                                                                                             |
+| Архитектура                       | [Архитектура](https://github.com/codegenIrlX/cdg-automation-framework/tree/main/docs/architecrure)                          |
+|                                   |                                                                                                                             |
 | Фреймворк / Библиотеки            | [Документация по библиотекам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/dependencies) |
 | Фреймворк / Alembic (опционально) | [Документация по Alembic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/alembic)          |
 | Фреймворк / Allure                | [Документация по Allure](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/allure)            |
