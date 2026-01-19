@@ -1,33 +1,33 @@
-# Документация: Архитектура фреймворка автоматизации: framework + domains
+# Архитектура фреймворка автоматизации: framework + domains
 
 ## Оглавление
 
 - [1. Введение](#1-введение)
 - [2. Архитектурная концепция](#2-архитектурная-концепция)
-  - [2.1. Слой `framework` (инфраструктура)](#21-слой-framework-инфраструктура)
-  - [2.2. Слой `domains` (продуктовые модули)](#22-слой-domains-продуктовые-модули)
-- [3. Пример структуры проекта (архитектура)](#3-пример-структуры-проекта-архитектура)
+  - [2.1 Слой `framework` (инфраструктура)](#21-слой-framework-инфраструктура)
+  - [2.2 Слой `domains` (продуктовые модули)](#22-слой-domains-продуктовые-модули)
+- [3. Пример структуры проекта (универсальная архитектура)](#3-пример-структуры-проекта-универсальная-архитектура)
 - [4. Работа с DTO и схемами (Pydantic)](#4-работа-с-dto-и-схемами-pydantic)
-  - [4.1. Паттерн раскладки DTO по методам](#41-паттерн-раскладки-dto-по-методам)
-  - [4.2. Примеры нейминга](#42-примеры-нейминга)
-  - [4.3. Преимущества подхода](#43-преимущества-подхода)
+  - [4.1 Паттерн раскладки DTO по методам](#41-паттерн-раскладки-dto-по-методам)
+  - [4.2 Примеры нейминга](#42-примеры-нейминга)
+  - [4.3 Преимущества подхода](#43-преимущества-подхода)
 - [5. API слой и сервисы](#5-api-слой-и-сервисы)
-  - [5.1. `api/` — тонкие клиенты](#51-api-тонкие-клиенты)
-  - [5.2. `services/` — бизнес-методы и сценарии для тестов](#52-services-бизнес-методы-и-сценарии-для-тестов)
-  - [5.3. `repositories/` — доступ к БД без тестовой логики](#53-repositories-доступ-к-бд-без-тестовой-логики)
-  - [5.4. Рекомендации по именованию](#54-рекомендации-по-именованию)
+  - [5.1 `api/` — тонкие клиенты](#51-api-тонкие-клиенты)
+  - [5.2 `services/` — бизнес-методы и сценарии для тестов](#52-services-бизнес-методы-и-сценарии-для-тестов)
+  - [5.3 `repositories/` — доступ к БД без тестовой логики](#53-repositories-доступ-к-бд-без-тестовой-логики)
+  - [5.4 Рекомендации по именованию](#54-рекомендации-по-именованию)
 - [6. Структура и стили тестов](#6-структура-и-стили-тестов)
-  - [6.1. Разделение на `component`, `contract`, `integration`, `e2e`](#61-разделение-на-component-contract-integration-e2e)
-  - [6.2. Один файл на одну операцию](#62-один-файл-на-одну-операцию)
-  - [6.3. AAA или Given-When-Then](#63-aaa-или-given-when-then)
-  - [6.4. Примеры оформления тестов](#64-примеры-оформления-тестов)
+  - [6.1 Разделение на `component`, `contract`, `integration`, `e2e`](#61-разделение-на-component-contract-integration-e2e)
+  - [6.2 Один файл на одну операцию](#62-один-файл-на-одну-операцию)
+  - [6.3 AAA или Given-When-Then](#63-aaa-или-given-when-then)
+  - [6.4 Примеры оформления тестов](#64-примеры-оформления-тестов)
 - [7. Организация фикстур и тест-данных](#7-организация-фикстур-и-тест-данных)
-  - [7.1. Уровни фикстур: инфраструктурные, тестовые, доменные](#71-уровни-фикстур-инфраструктурные-тестовые-доменные)
-  - [7.2. Builders и factories вместо копипасты](#72-builders-и-factories-вместо-копипасты)
-  - [7.3. Где и как располагать тест-данные](#73-где-и-как-располагать-тест-данные)
+  - [7.1 Уровни фикстур: инфраструктурные, тестовые, доменные](#71-уровни-фикстур-инфраструктурные-тестовые-доменные)
+  - [7.2 Builders и factories вместо копипасты](#72-builders-и-factories-вместо-копипасты)
+  - [7.3 Где и как располагать тест-данные](#73-где-и-как-располагать-тест-данные)
 - [8. Маркеры и test-pyramid](#8-маркеры-и-test-pyramid)
-  - [8.1. Использование `pytest.mark` для разных слоёв](#81-использование-pytestmark-для-разных-слоёв)
-  - [8.2. Как это помогает масштабируемости и CI/CD](#82-как-это-помогает-масштабируемости-и-cicd)
+  - [8.1 Использование `pytest.mark` для разных слоёв](#81-использование-pytestmark-для-разных-слоёв)
+  - [8.2 Как это помогает масштабируемости и CI/CD](#82-как-это-помогает-масштабируемости-и-cicd)
 
 ---
 
@@ -51,7 +51,7 @@
 ## 2. Архитектурная концепция
 
 ### 2.1 Слой `framework` (инфраструктура)
-`framework` — это «платформа» для тестов. Она не знает про конкретные эндпоинты “users/balance”, но предоставляет всё, что нужно тестам и доменным модулям:
+`framework` — это «платформа» для тестов. Она не знает про конкретные эндпоинты “profiles/ledger”, но предоставляет всё, что нужно тестам и доменным модулям:
 
 Что обычно лежит в `framework/`:
 - **config/** — settings, работа с env, выбор окружения (dev/stage/prod), конфиги сервисов;
@@ -84,15 +84,16 @@
 
 ---
 
-## 3. Пример структуры проекта (архитектура)
+## 3. Пример структуры проекта (универсальная архитектура)
 
-Ниже — пример дерева каталогов, где видно разделение `framework`/`domains` и то, как укладываются тесты и вспомогательные ресурсы.
+Ниже — универсальный пример дерева каталогов для enterprise‑проекта с микросервисами и автотестами **REST / MQ / DB**.
+Он сохраняет принцип разделения **`framework/` (инфраструктура)** и **`domains/` (предметные модули)**, но без привязки к конкретному продукту.
 
 ```text
 cdg-automation-framework/
 ├── .github/workflows/                # CI пайплайны (линт, тесты, отчёты, артефакты)
-├── docker/
-│   ├── docker-compose.yml            # окружение для локального запуска (DB/MQ/etc.)
+├── docker-compose.yml                # окружение для локального запуска (DB/MQ/etc.)
+├── init/
 │   └── db/seed.sql                   # сиды для тестовой БД (опционально)
 ├── docs/
 │   ├── framework/                    # документация по инфраструктуре (pytest/httpx/db/allure)
@@ -107,20 +108,47 @@ cdg-automation-framework/
 │   │   ├── fixtures/                 # инфраструктурные фикстуры (api_client, db_session, etc.)
 │   │   └── reporting/                # allure helpers, attach, стандарт шагов/артефактов
 │   ├── domains/
-│   │   ├── users/
-│   │   │   ├── contracts/            # DTO (req/res/common), разложенные по методам
-│   │   │   ├── api/                  # низкоуровневые вызовы /users (http)
-│   │   │   ├── services/             # сценарии: create_user, get_user, ensure_user_exists
-│   │   │   ├── repositories/         # запросы к БД: users, roles
-│   │   │   └── testdata/             # builders/factories для пользователей
-│   │   └── balance_payments/
-│   │       ├── contracts/
-│   │       ├── api/
-│   │       ├── services/
-│   │       ├── repositories/
-│   │       └── testdata/
+│   │   ├── api/                      # домены, работающие через HTTP-интерфейсы (REST/gRPC gateway и т.п.)
+│   │   │   ├── product_core/
+│   │   │   │   ├── contracts/        # DTO/контракты запросов и ответов
+│   │   │   │   ├── api/              # тонкие API-клиенты и вызовы методов
+│   │   │   │   ├── services/         # сценарии и бизнес-методы для тестов
+│   │   │   │   ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │   │   │   └── testdata/         # builders/factories и наборы данных
+│   │   │   └── product_number/
+│   │   │       ├── contracts/        # DTO/контракты запросов и ответов
+│   │   │       ├── api/              # тонкие API-клиенты и вызовы методов
+│   │   │       ├── services/         # сценарии и бизнес-методы для тестов
+│   │   │       ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │   │       └── testdata/         # builders/factories и наборы данных
+│   │   ├── mq/                       # домены, интегрирующиеся через брокеры сообщений (Kafka/Rabbit/NATS и т.п.)
+│   │   │   ├── message_broker/
+│   │   │   │   ├── contracts/        # DTO/контракты сообщений и событий
+│   │   │   │   ├── api/              # тонкие клиенты/обёртки для MQ
+│   │   │   │   ├── services/         # сценарии обработки и проверки событий
+│   │   │   │   ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │   │   │   └── testdata/         # builders/factories и наборы данных
+│   │   │   └── event_engine/
+│   │   │       ├── contracts/        # DTO/контракты сообщений и событий
+│   │   │       ├── api/              # тонкие клиенты/обёртки для MQ
+│   │   │       ├── services/         # сценарии обработки и проверки событий
+│   │   │       ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │   │       └── testdata/         # builders/factories и наборы данных
+│   │   └── db/                       # домены, работающие с предметными данными из БД (reference/identity/permissions и т.п.)
+│   │       ├── user_profile/
+│   │       │   ├── contracts/        # DTO/контракты запросов и ответов
+│   │       │   ├── api/              # (опционально) API над БД/админ-интерфейс, если есть
+│   │       │   ├── services/         # сценарии для тестов: подготовка/проверка данных
+│   │       │   ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │       │   └── testdata/         # builders/factories и наборы данных
+│   │       └── permissions/
+│   │           ├── contracts/        # DTO/контракты запросов и ответов
+│   │           ├── api/              # (опционально) API над БД/админ-интерфейс, если есть
+│   │           ├── services/         # сценарии для тестов: подготовка/проверка данных
+│   │           ├── repositories/     # доступ к данным (ORM/SQL), без логики тестов
+│   │           └── testdata/         # builders/factories и наборы данных
 ├── tests/
-│   ├── conftest.py                   # "тонкие" фикстуры уровня тестов (композиция)
+│   ├── conftest.py                   # «тонкие» фикстуры уровня тестов (композиция)
 │   ├── _fixtures/                    # тестовые фикстуры (domain fixtures, builders access)
 │   ├── api/                          # тесты API (по слоям: component/contract/integration/e2e)
 │   ├── db/                           # тесты БД (проверки миграций, запросы, консистентность)
@@ -132,12 +160,48 @@ cdg-automation-framework/
 └── .env / .env.example               # конфигурация окружения
 ```
 
-Рекомендации:
-- всё, что можно переиспользовать — держим в `src/` (framework/domains);
-- `tests/` — только тесты, композиция фикстур и тестовые утилиты локального уровня;
-- документацию по инструментам — в `docs/framework/`.
+### Пояснение контекстов `domains/`
 
----
+- **`api/`** — домены, работающие через HTTP‑интерфейсы (REST/gRPC gateway). Здесь живут обёртки над эндпоинтами, DTO и сценарии, которые используют тесты.
+- **`mq/`** — интеграции через брокеры сообщений и события. Отличается тем, что коммуникация асинхронная и часто требуется «ожидание/проверка доставки».
+- **`db/`** — домены, завязанные на предметные данные БД. Отличается от `framework/db`: здесь — предметные репозитории и DTO, а в `framework/db` — инфраструктура подключения/сессий.
+
+> Важно: названия доменов внутри контекстов (`product_core`, `event_engine`, `user_profile`, …) — нейтральные примеры. В реальном проекте используйте те же границы, что и в продуктовой архитектуре (bounded contexts).
+
+### Как добавлять новые домены и контексты
+
+1) **Добавление нового домена в существующий контекст**
+- если новая функциональность относится к уже существующей зоне (например, ещё один HTTP‑сервис или новая таблица/сущность в БД), добавляйте пакет уровня:
+  - `domains/api/<new_domain>/...` или `domains/mq/<new_domain>/...` или `domains/db/<new_domain>/...`
+- придерживайтесь одинаковой внутренней раскладки (`contracts/api/services/repositories/testdata`) — это ускоряет навигацию и снижает порог входа.
+
+2) **Добавление нового контекста (новой технологической зоны)**
+- если появляется новая «плоскость интеграции», которая заметно отличается по механике (например, `grpc/`, `s3/`, `cache/`, `ui/`), выделяйте отдельный контекст:
+  - `domains/<context>/...`
+- критерий: у контекста обычно появляется свой тип клиентов/фикстур/паттернов ожидания (например, подписки на события, polling, транзакционность и т.п.).
+
+### Чем отличаются `framework/`, `domains/` и `tests/`
+
+- **`src/framework/`** — переиспользуемая инфраструктура.
+  - *Можно (и нужно) переиспользовать везде.*
+  - Не содержит бизнес‑терминов продукта и конкретных эндпоинтов/таблиц.
+
+- **`src/domains/`** — предметные модули (bounded contexts).
+  - *Переиспользуется тестами*, но уже содержит бизнес‑термины и предметные DTO/репозитории/сервисы.
+  - Здесь живут тонкие клиенты (`api/`), сценарии (`services/`) и доступ к данным (`repositories/`).
+
+- **`tests/`** — сами тесты и их «клей».
+  - Здесь не должно быть повторно используемой доменной логики (она живёт в `src/`).
+  - Допустимы локальные хелперы и композиция фикстур, специфичная для конкретного набора тестов.
+
+### Что и где должно лежать (и что переиспользуется)
+
+- **Переиспользуемое между доменами** → `src/framework/` (клиенты, конфиг, db‑сессии, ассёрты, репортинг, генераторы).
+- **Переиспользуемое внутри домена** → `src/domains/<context>/<domain>/...` (DTO, API‑обёртки, сервисы сценариев, репозитории, factories).
+- **Только для тестов** → `tests/` (`conftest.py`, тестовые фикстуры‑композиции, локальные хелперы, статические данные).
+
+
+
 
 ## 4. Работа с DTO и схемами (Pydantic)
 
@@ -149,11 +213,11 @@ cdg-automation-framework/
 
 Рекомендуемый паттерн в домене:
 ```text
-src/domains/users/contracts/
-  create_user/
+src/domains/db/user_profile/contracts/
+  create_profile/
     req.py
     res.py
-  get_user/
+  get_profile/
     req.py
     res.py
   common.py
@@ -165,31 +229,31 @@ src/domains/users/contracts/
 - `contracts/common.py`
 
 ### 4.2 Примеры нейминга
-- метод = *глагол + сущность*: `create_user`, `update_user`, `get_user`, `list_users`
+- метод = *глагол + сущность*: `create_profile`, `update_profile`, `get_profile`, `list_profiles`
 - DTO классы:
-  - `CreateUserRequest`, `CreateUserResponse`
-  - `GetUserResponse`
-  - общие: `UserDTO`, `RoleDTO`, `ErrorDTO`
+  - `CreateUserProfileRequest`, `CreateUserProfileResponse`
+  - `GetUserProfileResponse`
+  - общие: `UserProfileDTO`, `PermissionDTO`, `ErrorDTO`
 
-Пример `contracts/get_user/res.py`:
+Пример `contracts/get_profile/res.py`:
 ```python
 from pydantic import BaseModel
 
-class RoleDTO(BaseModel):
+class PermissionDTO(BaseModel):
     name: str
 
-class UserDTO(BaseModel):
+class UserProfileDTO(BaseModel):
     id: int
     name: str
-    roles: list[RoleDTO]
+    permissions: list[PermissionDTO]
 
-class GetUserResponse(BaseModel):
-    data: UserDTO
+class GetUserProfileResponse(BaseModel):
+    data: UserProfileDTO
 ```
 
 ### 4.3 Преимущества подхода
 - легко найти DTO по операции;
-- проще поддерживать версионирование (`get_user_v2/` или `/api/v2/` на уровне api/service);
+- проще поддерживать версионирование (`get_profile_v2/` или `/api/v2/` на уровне api/service);
 - уменьшается риск конфликтов имён и «случайных импортов».
 
 ---
@@ -210,20 +274,20 @@ class GetUserResponse(BaseModel):
 - ретраи сценариев;
 - проверки (assert) уровня тестов.
 
-Пример `src/domains/users/api/users_api.py`:
+Пример `src/domains/db/user_profile/api/user_profile_api.py`:
 ```python
 import allure
 from src.framework.clients.base_api_client import BaseAPIClient
-from src.domains.users.contracts.get_user.res import GetUserResponse
+from src.domains.db.user_profile.contracts.get_profile.res import GetUserProfileResponse
 
-class UsersApi:
+class UserProfileApi:
     def __init__(self, client: BaseAPIClient):
         self._client = client
 
-    @allure.step("GET /api/v1/users/{user_id}")
-    def get_user(self, user_id: int) -> GetUserResponse:
-        r = self._client.request("GET", f"/api/v1/users/{user_id}")
-        return GetUserResponse.model_validate(r.json())
+    @allure.step("GET /api/v1/profiles/{profile_id}")
+    def get_profile(self, profile_id: int) -> GetUserProfileResponse:
+        r = self._client.request("GET", f"/api/v1/profiles/{profile_id}")
+        return GetUserProfileResponse.model_validate(r.json())
 ```
 
 ### 5.2 `services/` — бизнес-методы и сценарии для тестов
@@ -233,19 +297,19 @@ class UsersApi:
 - композицию шагов и удобные методы для тестов;
 - Allure step’ы, чтобы отчёт был читаемым.
 
-Пример `src/domains/users/services/users_service.py`:
+Пример `src/domains/db/user_profile/services/user_profile_service.py`:
 ```python
 import allure
-from src.domains.users.api.users_api import UsersApi
-from src.domains.users.contracts.get_user.res import GetUserResponse
+from src.domains.db.user_profile.api.users_api import UserProfileApi
+from src.domains.db.user_profile.contracts.get_profile.res import GetUserProfileResponse
 
-class UsersService:
-    def __init__(self, api: UsersApi):
+class UserProfileService:
+    def __init__(self, api: UserProfileApi):
         self._api = api
 
-    @allure.step("Получить пользователя user_id={user_id}")
-    def get(self, user_id: int) -> GetUserResponse:
-        return self._api.get_user(user_id)
+    @allure.step("Получить пользователя profile_id={profile_id}")
+    def get(self, profile_id: int) -> GetUserProfileResponse:
+        return self._api.get_profile(profile_id)
 ```
 
 ### 5.3 `repositories/` — доступ к БД без тестовой логики
@@ -253,29 +317,29 @@ class UsersService:
 - SELECT/INSERT/UPDATE на уровне SQLAlchemy/text();
 - возвращает DTO/словарь/модель, но без assert-логики и «сценариев теста».
 
-Пример `src/domains/users/repositories/users_repo.py`:
+Пример `src/domains/db/user_profile/repositories/user_profile_repo.py`:
 ```python
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-class UsersRepository:
+class UserProfileRepository:
     def __init__(self, session: Session):
         self._session = session
 
-    def get_user_row(self, user_id: int) -> dict:
+    def get_profile_row(self, profile_id: int) -> dict:
         row = self._session.execute(
-            text("SELECT id, name FROM users WHERE id=:id"),
-            {"id": user_id},
+            text("SELECT id, name FROM user_profile WHERE id=:id"),
+            {"id": profile_id},
         ).mappings().first()
         return dict(row) if row else {}
 ```
 
 ### 5.4 Рекомендации по именованию
-- API: `UsersApi`, `BalanceApi`
-- Service: `UsersService`, `BalanceService`
-- Repository: `UsersRepository`, `BalanceRepository`
+- API: `UserProfileApi`, `ProductCoreApi`
+- Service: `UserProfileService`, `ProductCoreService`
+- Repository: `UserProfileRepository`, `ProductCoreRepository`
 - Методы:
-  - API: `get_user`, `create_user` (в терминах endpoint)
+  - API: `get_profile`, `create_profile` (в терминах endpoint)
   - Service: `get`, `create`, `ensure_exists`, `create_and_wait` (в терминах сценариев)
 
 ---
@@ -299,31 +363,31 @@ tests/api/e2e/
 
 ### 6.2 Один файл на одну операцию
 Принцип: **1 файл = 1 операция**:
-- `test_balance_get.py`
-- `test_user_create.py`
-- `test_user_update.py`
+- `test_product_core_get.py`
+- `test_profile_create.py`
+- `test_profile_update.py`
 
 ### 6.3 AAA или Given-When-Then
 Оба стиля допустимы — главное, чтобы команда придерживалась единого стандарта.
 
 **AAA (Arrange-Act-Assert)**:
 ```python
-def test_get_balance(balance_service):
+def test_get_product_core(product_core_service):
     # Arrange
-    user_id = 1
+    profile_id = 1
 
     # Act
-    resp = balance_service.get_balance(user_id)
+    resp = balance_service.get_balance(profile_id)
 
     # Assert
-    assert resp.data.amount >= 0
+    assert resp.data is not None
 ```
 
 **Given-When-Then**:
 ```python
-def test_create_user(users_service, user_factory):
+def test_create_profile(users_service, user_factory):
     # Given
-    req = user_factory.build_create_user()
+    req = user_factory.build_create_profile()
 
     # When
     resp = users_service.create(req)
@@ -360,12 +424,12 @@ def test_create_user(users_service, user_factory):
 
 Пример factory:
 ```python
-from src.domains.users.contracts.create_user.req import CreateUserRequest
+from src.domains.db.user_profile.contracts.create_profile.req import CreateUserProfileRequest
 
-class UserFactory:
-    def build_create_user(self, **overrides) -> CreateUserRequest:
-        data = {"name": "test", "role": "user"} | overrides
-        return CreateUserRequest(**data)
+class UserProfileFactory:
+    def build_create_profile(self, **overrides) -> CreateUserProfileRequest:
+        data = {"display_name": "test", "permission": "basic"} | overrides
+        return CreateUserProfileRequest(**data)
 ```
 
 ### 7.3 Где и как располагать тест-данные

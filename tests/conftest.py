@@ -7,9 +7,9 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from framework.clients import RabbitMQClient
-from framework.clients.db import create_engine_from_dsn, create_session_factory
+from framework.db import create_engine_from_dsn, create_session_factory
 from framework.config import settings
-from framework.services import BalanceService
+from domains.api.plusofon.balance import BalanceService
 from framework.utils.logger import setup_logger
 
 
