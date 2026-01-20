@@ -18,9 +18,9 @@ class BaseAPIClient:
         status_code_map: dict[int, str] | None = None,
     ) -> None:
         self._client = httpx.Client(
-            base_url=settings.base_url,
-            timeout=settings.timeout_seconds,
-            verify=settings.verify_ssl,
+            base_url=settings.BASE_URL,
+            timeout=settings.TIMEOUT_SECONDS,
+            verify=settings.VERIFY_SSL,
             headers=self._build_headers(),
             transport=transport,
         )
@@ -30,10 +30,10 @@ class BaseAPIClient:
     def _build_headers() -> dict[str, str]:
         headers = {
             "Accept": "application/json",
-            "Client": settings.client_id,
+            "Client": settings.CLIENT_ID,
         }
-        if settings.api_token:
-            headers["Authorization"] = f"Bearer {settings.api_token}"
+        if settings.API_TOKEN:
+            headers["Authorization"] = f"Bearer {settings.API_TOKEN}"
         return headers
 
     def request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
@@ -41,7 +41,7 @@ class BaseAPIClient:
         bound_logger = logger.bind(request_id=request_id)
         bound_logger.info("Запрос {method} {url}", method=method, url=url)
 
-        if settings.log_level.upper() == "DEBUG":
+        if settings.LOG_LEVEL.upper() == "DEBUG":
             headers = {
                 **dict(self._client.headers),
                 **(kwargs.get("headers") or {}),
@@ -68,7 +68,7 @@ class BaseAPIClient:
 
         response = self._client.request(method, url, **kwargs)
         bound_logger.info("Ответ {status_code}", status_code=response.status_code)
-        if settings.log_level.upper() == "DEBUG":
+        if settings.LOG_LEVEL.upper() == "DEBUG":
             bound_logger.debug(
                 "Response details:\n"
                 "  Headers: {headers}\n"

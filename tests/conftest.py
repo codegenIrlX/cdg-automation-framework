@@ -15,7 +15,7 @@ from framework.utils.logger import setup_logger
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_logging() -> None:
-    setup_logger(settings.log_level)
+    setup_logger(settings.LOG_LEVEL)
 
 
 @pytest.fixture()
@@ -25,11 +25,8 @@ def balance_service() -> BalanceService:
 
 @pytest.fixture(scope="session")
 def db_engine(request: pytest.FixtureRequest) -> Engine:
-    if not settings.db_dsn:
-        pytest.skip("Переменная DB_DSN не задана, тесты с БД пропущены")
-
-    logger.info("Инициализация подключения к БД для тестов")
-    engine = create_engine_from_dsn(settings.db_dsn, echo=settings.db_echo)
+    logger.info("Инициализация подключения к БД")
+    engine = create_engine_from_dsn(settings.DB_URL, echo=settings.DB_ECHO)
     request.addfinalizer(engine.dispose)
     return engine
 
@@ -57,7 +54,7 @@ def rabbitmq_client() -> RabbitMQClient:
     try:
         client.connect()
     except AMQPConnectionError:
-        pytest.skip("RabbitMQ недоступен, тест пропущен")
+        pytest.skip("RabbitMQ недоступен")
 
     yield client
     client.close()

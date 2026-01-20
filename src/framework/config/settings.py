@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,19 +12,29 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    base_url: str = Field("https://restapi.plusofon.ru", alias="BASE_URL")
-    api_token: str | None = Field(default=None, alias="API_TOKEN")
-    client_id: str = Field("10553", alias="CLIENT_ID")
-    timeout_seconds: float = Field(10.0, alias="TIMEOUT_SECONDS")
-    verify_ssl: bool = Field(True, alias="VERIFY_SSL")
-    log_level: str = Field("INFO", alias="LOG_LEVEL")
-    db_dsn: str | None = Field(default=None, alias="DB_DSN")
-    db_echo: bool = Field(False, alias="DB_ECHO")
-    rabbitmq_host: str = Field("localhost", alias="RABBITMQ_HOST")
-    rabbitmq_port: int = Field(5672, alias="RABBITMQ_PORT")
-    rabbitmq_user: str = Field("guest", alias="RABBITMQ_USER")
-    rabbitmq_password: str = Field("guest", alias="RABBITMQ_PASSWORD")
-    rabbitmq_vhost: str = Field("/", alias="RABBITMQ_VHOST")
+    BASE_URL: str
+    API_TOKEN: str | None
+    CLIENT_ID: str
+    TIMEOUT_SECONDS: float
+    VERIFY_SSL: bool
+    LOG_LEVEL: str
+    DB_HOST: str
+    DB_PORT: int
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_ECHO: bool
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_VHOST: str
 
+    @property
+    def DB_URL(self) -> str:
+        return (
+            f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
 settings = Settings()
