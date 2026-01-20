@@ -30,6 +30,16 @@ jobs:
           TIMEOUT_SECONDS: ${{ secrets.TIMEOUT_SECONDS }}
           VERIFY_SSL: ${{ secrets.VERIFY_SSL }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_ECHO: ${{ secrets.DB_ECHO }}
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
         run: |
           pytest -m smoke -o addopts="-ra" -vv -s --log-cli-level="${LOG_LEVEL:-INFO}" --alluredir=allure-results
