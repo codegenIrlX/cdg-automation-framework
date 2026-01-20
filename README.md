@@ -146,7 +146,7 @@ docker compose ps
 
 При старте контейнера PostgreSQL монтируется каталог:
 
-- `./docker-entrypoint-initdb.d` → `/docker-entrypoint-initdb.d` (read-only)
+- `./init/db` → `/docker-entrypoint-initdb.d` (read-only)
 
 Положите туда `.sql`/`.sh` файлы — они выполнятся **один раз** при первом создании volume.
 
