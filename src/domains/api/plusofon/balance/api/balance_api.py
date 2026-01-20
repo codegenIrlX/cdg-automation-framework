@@ -5,7 +5,11 @@ import httpx
 from loguru import logger
 from pydantic import ValidationError
 
-from domains.api.plusofon.balance.contracts import BalanceNoticeResponse, BalanceResponse
+from domains.api.plusofon.balance.contracts import (
+    BalanceNoticeResponse,
+    BalanceResponse,
+    PaymentHistoryResponse,
+)
 from domains.api.plusofon.contracts import PLUSOFON_STATUS_CODES
 from framework.clients.base_client import BaseAPIClient
 
@@ -28,6 +32,17 @@ class BalanceApi:
         response.raise_for_status()
         return response, self._parse_balance_notice_response(response)
 
+    @allure.step("GET /api/v1/payment/history/{operation_type}")
+    def get_payment_history(
+        self, operation_type: str
+    ) -> tuple[httpx.Response, PaymentHistoryResponse]:
+        response = self._client.request(
+            "GET",
+            f"api/v1/payment/history/{operation_type}",
+        )
+        response.raise_for_status()
+        return response, self._parse_payment_history_response(response)
+
     @staticmethod
     def _parse_balance_response(response: httpx.Response) -> BalanceResponse:
         try:
@@ -48,6 +63,19 @@ class BalanceApi:
         except ValidationError as exc:
             logger.error(
                 "Код 422: Ошибка валидации ответа порога баланса: {error}",
+                error=exc,
+            )
+            raise
+
+    @staticmethod
+    def _parse_payment_history_response(
+        response: httpx.Response,
+    ) -> PaymentHistoryResponse:
+        try:
+            return PaymentHistoryResponse.model_validate(response.json())
+        except ValidationError as exc:
+            logger.error(
+                "Код 422: Ошибка валидации истории операций: {error}",
                 error=exc,
             )
             raise

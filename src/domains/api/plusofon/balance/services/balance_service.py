@@ -4,7 +4,11 @@ import allure
 import httpx
 
 from domains.api.plusofon.balance.api.balance_api import BalanceApi
-from domains.api.plusofon.balance.contracts import BalanceNoticeResponse, BalanceResponse
+from domains.api.plusofon.balance.contracts import (
+    BalanceNoticeResponse,
+    BalanceResponse,
+    PaymentHistoryResponse,
+)
 
 
 class BalanceService:
@@ -20,3 +24,9 @@ class BalanceService:
     @allure.step("Получить порог баланса для уведомления")
     def get_balance_notice(self) -> tuple[httpx.Response, BalanceNoticeResponse]:
         return self._api.get_balance_notice()
+
+    @allure.step("Получить историю операций")
+    def get_payment_history(
+        self, operation_type: str
+    ) -> tuple[httpx.Response, PaymentHistoryResponse]:
+        return self._api.get_payment_history(operation_type)
