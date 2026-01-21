@@ -37,7 +37,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = "-ra --alluredir=allure-results --clean-alluredir"
 testpaths = ["tests"]
 pythonpath = ["src"]
 

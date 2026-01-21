@@ -146,7 +146,7 @@ docker compose ps
 
 При старте контейнера PostgreSQL монтируется каталог:
 
-- `./docker-entrypoint-initdb.d` → `/docker-entrypoint-initdb.d` (read-only)
+- `./init/db` → `/docker-entrypoint-initdb.d` (read-only)
 
 Положите туда `.sql`/`.sh` файлы — они выполнятся **один раз** при первом создании volume.
 
@@ -184,9 +184,11 @@ docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:90
 | TIMEOUT_SECONDS   | -        |
 | VERIFY_SSL        | -        |
 | LOG_LEVEL         | -        |
-| POSTGRES_DB       | -        |
-| POSTGRES_USER     | -        |
-| POSTGRES_PASSWORD | -        |
+| DB_HOST           | -        |
+| DB_PORT           | -        |
+| DB_NAME           | -        |
+| DB_USER           | -        |
+| DB_PASSWORD       | -        |
 | DB_ECHO           | -        |
 | RABBITMQ_HOST     | -        |
 | RABBITMQ_PORT     | -        |

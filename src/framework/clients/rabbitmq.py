@@ -34,11 +34,11 @@ class RabbitMQClient:
     @classmethod
     def from_settings(cls, settings: Settings) -> "RabbitMQClient":
         return cls(
-            host=settings.rabbitmq_host,
-            port=settings.rabbitmq_port,
-            user=settings.rabbitmq_user,
-            password=settings.rabbitmq_password,
-            vhost=settings.rabbitmq_vhost,
+            host=settings.RABBITMQ_HOST,
+            port=settings.RABBITMQ_PORT,
+            user=settings.RABBITMQ_USER,
+            password=settings.RABBITMQ_PASSWORD,
+            vhost=settings.RABBITMQ_VHOST,
         )
 
     def connect(self) -> None:
