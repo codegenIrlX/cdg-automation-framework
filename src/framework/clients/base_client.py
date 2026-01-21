@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 from uuid import uuid4
 
 import httpx
-from loguru import logger
 
+from framework.clients.headers import DefaultHeadersBuilder
 from framework.config import settings
+from framework.logging.api_logger import ApiLogger
 
 
 class BaseAPIClient:
@@ -16,70 +18,52 @@ class BaseAPIClient:
         self,
         transport: httpx.BaseTransport | None = None,
         status_code_map: dict[int, str] | None = None,
+        *,
+        http_client: httpx.Client | None = None,
+        headers_builder: DefaultHeadersBuilder | None = None,
+        api_logger: ApiLogger | None = None,
+        request_id_provider: Callable[[], str] | None = None,
+        settings_obj=settings,
     ) -> None:
-        self._client = httpx.Client(
-            base_url=settings.BASE_URL,
-            timeout=settings.TIMEOUT_SECONDS,
-            verify=settings.VERIFY_SSL,
-            headers=self._build_headers(),
+        self._settings = settings_obj
+        self._headers_builder = headers_builder or DefaultHeadersBuilder(
+            client_id=self._settings.CLIENT_ID,
+            api_token=self._settings.API_TOKEN,
+        )
+        self._client = http_client or httpx.Client(
+            base_url=self._settings.BASE_URL,
+            timeout=self._settings.TIMEOUT_SECONDS,
+            verify=self._settings.VERIFY_SSL,
+            headers=self._headers_builder.build(),
             transport=transport,
         )
         self._status_code_map = status_code_map or {}
-
-    @staticmethod
-    def _build_headers() -> dict[str, str]:
-        headers = {
-            "Accept": "application/json",
-            "Client": settings.CLIENT_ID,
-        }
-        if settings.API_TOKEN:
-            headers["Authorization"] = f"Bearer {settings.API_TOKEN}"
-        return headers
+        self._logger = api_logger or ApiLogger(self._settings.LOG_LEVEL)
+        self._request_id_provider = request_id_provider or (lambda: str(uuid4()))
 
     def request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
-        request_id = kwargs.pop("request_id", None) or str(uuid4())
-        bound_logger = logger.bind(request_id=request_id)
-        bound_logger.info("Запрос {method} {url}", method=method, url=url)
-
-        if settings.LOG_LEVEL.upper() == "DEBUG":
-            headers = {
-                **dict(self._client.headers),
-                **(kwargs.get("headers") or {}),
-            }
-            masked_headers = self._mask_sensitive_headers(headers)
-            params = kwargs.get("params")
-            body = None
-            if "json" in kwargs:
-                body = kwargs.get("json")
-            elif "data" in kwargs:
-                body = kwargs.get("data")
-            elif "content" in kwargs:
-                body = kwargs.get("content")
-
-            bound_logger.debug(
-                "Request details:\n"
-                "  Headers: {headers}\n"
-                "  Params: {params}\n"
-                "  Body: {body}",
-                headers=masked_headers,
-                params=params,
-                body=body,
-            )
+        request_id = kwargs.pop("request_id", None) or self._request_id_provider()
+        headers = {
+            **dict(self._client.headers),
+            **(kwargs.get("headers") or {}),
+        }
+        params = kwargs.get("params")
+        body = self._extract_body(kwargs)
+        bound_logger = self._logger.log_request(
+            method=method,
+            url=url,
+            headers=headers,
+            params=params,
+            body=body,
+            request_id=request_id,
+        )
 
         response = self._client.request(method, url, **kwargs)
-        bound_logger.info("Ответ {status_code}", status_code=response.status_code)
-        if settings.LOG_LEVEL.upper() == "DEBUG":
-            bound_logger.debug(
-                "Response details:\n"
-                "  Headers: {headers}\n"
-                "  Body: {body}",
-                headers=dict(response.headers),
-                body=response.text,
-            )
+        self._logger.log_response(bound_logger, response)
         if response.status_code >= 400:
             message = self._status_code_map.get(response.status_code, response.text)
-            bound_logger.error(
-                "Код {status_code}: {message}",
+            self._logger.log_error(
+                bound_logger,
                 status_code=response.status_code,
                 message=message,
             )
@@ -89,10 +73,11 @@ class BaseAPIClient:
         self._client.close()
 
     @staticmethod
-    def _mask_sensitive_headers(headers: dict[str, Any]) -> dict[str, Any]:
-        masked = dict(headers)
-        if "authorization" in masked:
-            masked["authorization"] = "***"
-        if "Authorization" in masked:
-            masked["Authorization"] = "***"
-        return masked
+    def _extract_body(kwargs: dict[str, Any]) -> Any:
+        if "json" in kwargs:
+            return kwargs.get("json")
+        if "data" in kwargs:
+            return kwargs.get("data")
+        if "content" in kwargs:
+            return kwargs.get("content")
+        return None
