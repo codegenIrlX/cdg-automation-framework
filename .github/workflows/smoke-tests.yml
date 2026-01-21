@@ -51,7 +51,7 @@ jobs:
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
         run: |
           rm -rf allure-results
-          pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}" --alluredir=allure-results
+          pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
 
       - name: Upload allure-results artifact
         if: always()
