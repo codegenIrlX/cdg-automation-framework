@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  smoke:
+  smoke_with_allure_report:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
-      - name: Run smoke tests
+      - name: Run smoke tests (produce allure-results)
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           API_TOKEN: ${{ secrets.API_TOKEN }}
@@ -52,48 +52,32 @@ jobs:
         run: |
           pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
 
-      - name: Upload allure results artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
-          if-no-files-found: warn
-          retention-days: 7
-
-  generate_allure_report:
-    needs: smoke
-    if: ${{ needs.smoke.result == 'success' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download allure results artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
-
       - name: Set up Node.js
+        if: success()
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Set up Java
+        if: success()
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
       - name: Install Allure CLI
+        if: success()
         run: |
           npm install --global allure-commandline
           allure --version
 
       - name: Generate Allure report
+        if: success()
         run: |
           allure generate ./allure-results -o ./allure-report --clean
 
-      - name: Upload allure report artifact
+      - name: Upload allure report artifact (only this)
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
