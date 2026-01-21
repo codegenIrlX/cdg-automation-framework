@@ -4,6 +4,13 @@ on:
   push:
     branches: ["main", "dev"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -16,6 +23,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -42,4 +50,53 @@ jobs:
           RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
         run: |
-          pytest -m smoke -o addopts="-ra" -vv -s --log-cli-level="${LOG_LEVEL:-INFO}" --alluredir=allure-results
+          pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
+
+      - name: Upload allure results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+          retention-days: 7
+
+  generate_allure_report:
+    needs: smoke
+    if: ${{ needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download allure results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install Allure CLI
+        run: |
+          npm install --global allure-commandline
+          allure --version
+
+      - name: Generate Allure report
+        run: |
+          allure generate ./allure-results -o ./allure-report --clean
+
+      - name: Upload allure report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          if-no-files-found: error
+          retention-days: 7
