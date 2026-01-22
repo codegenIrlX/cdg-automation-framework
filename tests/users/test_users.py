@@ -1,4 +1,5 @@
 import allure
+import pytest
 from mimesis import Person
 from sqlalchemy.orm import Session
 from uuid import uuid4
@@ -6,8 +7,9 @@ from uuid import uuid4
 from domains.db.users import UserRepository, UserService
 from domains.db.users.contracts import UserCreate
 
-
+@allure.parent_suite("DB")
 @allure.title("Пользователи: запись user_9 присутствует в базе")
+@pytest.mark.smoke
 def test_user_9_exists(db_session: Session) -> None:
     # Arrange
     repository = UserRepository(db_session)
