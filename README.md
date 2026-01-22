@@ -29,7 +29,7 @@
 |-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | Python-код                        | [Документация по Python-коду](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/python)                 |
 |                                   |                                                                                                                             |
-| Архитектура                       | [Архитектура](https://github.com/codegenIrlX/cdg-automation-framework/tree/main/docs/architecrure)                          |
+| Архитектура                       | [Документация по архитектуре](https://github.com/codegenIrlX/cdg-automation-framework/tree/main/docs/architecrure)          |
 |                                   |                                                                                                                             |
 | Фреймворк / Библиотеки            | [Документация по библиотекам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/dependencies) |
 | Фреймворк / Alembic (опционально) | [Документация по Alembic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/alembic)          |
@@ -176,22 +176,36 @@ docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:90
 
 ## 5. .env переменные
 
-| Переменная        | Описание |
-|-------------------|----------|
-| BASE_URL          | -        |
-| API_TOKEN         | -        |
-| CLIENT_ID         | -        |
-| TIMEOUT_SECONDS   | -        |
-| VERIFY_SSL        | -        |
-| LOG_LEVEL         | -        |
-| DB_HOST           | -        |
-| DB_PORT           | -        |
-| DB_NAME           | -        |
-| DB_USER           | -        |
-| DB_PASSWORD       | -        |
-| DB_ECHO           | -        |
-| RABBITMQ_HOST     | -        |
-| RABBITMQ_PORT     | -        |
-| RABBITMQ_USER     | -        |
-| RABBITMQ_PASSWORD | -        |
-| RABBITMQ_VHOST    | -        |
+Все настройки берутся из файла `.env`. Базовый шаблон расположен в `.env.example`.
+
+### 5.1. API и общие параметры
+
+| Переменная        | Описание                                                       | Пример                        |
+|-------------------|----------------------------------------------------------------|-------------------------------|
+| `BASE_URL`        | Базовый URL API, к которому выполняются запросы.               | `https://restapi.plusofon.ru` |
+| `API_TOKEN`       | Bearer-токен для авторизации в API. Должен быть задан вручную. | `your_token_here`             |
+| `CLIENT_ID`       | Значение заголовка `Client`, обязательное для Plusofon API.    | `10553`                       |
+| `TIMEOUT_SECONDS` | Таймаут HTTP-запросов в секундах.                              | `10`                          |
+| `VERIFY_SSL`      | Проверка SSL-сертификата (`true/false`).                       | `true`                        |
+| `LOG_LEVEL`       | Уровень логирования приложения (`DEBUG`, `INFO`).              | `INFO`                        |
+
+### 5.2. База данных (PostgreSQL)
+
+| Переменная    | Описание                                            | Пример      |
+|---------------|-----------------------------------------------------|-------------|
+| `DB_HOST`     | Хост базы данных.                                   | `localhost` |
+| `DB_PORT`     | Порт PostgreSQL.                                    | `5432`      |
+| `DB_NAME`     | Имя базы данных.                                    | `sipplus`   |
+| `DB_USER`     | Пользователь базы данных.                           | `sipplus`   |
+| `DB_PASSWORD` | Пароль пользователя базы данных.                    | `change_me` |
+| `DB_ECHO`     | Логирование SQL-запросов SQLAlchemy (`true/false`). | `false`     |
+
+### 5.3. RabbitMQ
+
+| Переменная          | Описание                      | Пример      |
+|---------------------|-------------------------------|-------------|
+| `RABBITMQ_HOST`     | Хост RabbitMQ.                | `localhost` |
+| `RABBITMQ_PORT`     | Порт AMQP.                    | `5672`      |
+| `RABBITMQ_USER`     | Пользователь RabbitMQ.        | `guest`     |
+| `RABBITMQ_PASSWORD` | Пароль пользователя RabbitMQ. | `guest`     |
+| `RABBITMQ_VHOST`    | Virtual host в RabbitMQ.      | `/`         |
