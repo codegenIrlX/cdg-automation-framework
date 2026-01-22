@@ -1,10 +1,12 @@
 import allure
+import pytest
 
 from framework.clients import RabbitMQClient
 from domains.mq.messaging.contracts import RabbitMQMessage
 
-
+@allure.parent_suite("RabbitMQ")
 @allure.title("RabbitMQ: создание очереди и публикация сообщения")
+@pytest.mark.smoke
 def test_rabbitmq_create_and_publish_positive(
     rabbitmq_client: RabbitMQClient,
     rabbitmq_queue: str,
