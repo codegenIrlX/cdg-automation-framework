@@ -182,6 +182,7 @@ docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:90
 
 | Переменная        | Описание                                                       | Пример                        |
 |-------------------|----------------------------------------------------------------|-------------------------------|
+| `ENVIRONMENT`     | Окружение.                                                     | `dev`                         |
 | `BASE_URL`        | Базовый URL API, к которому выполняются запросы.               | `https://restapi.plusofon.ru` |
 | `API_TOKEN`       | Bearer-токен для авторизации в API. Должен быть задан вручную. | `your_token_here`             |
 | `CLIENT_ID`       | Значение заголовка `Client`, обязательное для Plusofon API.    | `10553`                       |

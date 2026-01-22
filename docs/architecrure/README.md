@@ -236,8 +236,9 @@ cdg-automation-framework/
 │   ├── _data/                        # статические данные (json/xml), если нужны
 │   └── _helpers/                     # тестовые хелперы (локально для tests/, не в src/)
 ├── pyproject.toml                    # зависимости, инструменты (ruff, mypy, pytest config)
-├── README.md                         # общий обзор проекта
-└── .env / .env.example               # конфигурация окружения
+├── README.md                         # общий обзор проекта├── .env.example                    # шаблон переменных окружения (без секретов)
+├── .env                            # базовые дефолты (локально; не коммитится)
+└── .{ENVIRONMENT}.env              # overrides под выбранное окружение (пример: .test.env, .stage.env; не коммитится)
 ```
 
 ### Пояснение контекстов `domains/`
