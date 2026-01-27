@@ -73,5 +73,7 @@ jobs:
           RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
           RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
+          KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
+          KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
         run: |
           pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"

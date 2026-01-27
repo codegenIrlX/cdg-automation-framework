@@ -31,6 +31,8 @@
 |                                   |                                                                                                                             |
 | Архитектура                       | [Документация по архитектуре](https://github.com/codegenIrlX/cdg-automation-framework/tree/main/docs/architecrure)          |
 |                                   |                                                                                                                             |
+| Метрики                           | [Документация по метрикам](https://github.com/codegenIrlX/cdg-automation-framework/tree/main/docs/metrics)                  |
+|                                   |                                                                                                                             |
 | Фреймворк / Библиотеки            | [Документация по библиотекам](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/dependencies) |
 | Фреймворк / Alembic (опционально) | [Документация по Alembic](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/alembic)          |
 | Фреймворк / Allure                | [Документация по Allure](https://github.com/codegenIrlX/cdg-automation-framework/tree/dev/docs/framework/allure)            |
@@ -210,3 +212,10 @@ docker compose exec kafka bash -lc "kafka-topics --bootstrap-server localhost:90
 | `RABBITMQ_USER`     | Пользователь RabbitMQ.        | `guest`     |
 | `RABBITMQ_PASSWORD` | Пароль пользователя RabbitMQ. | `guest`     |
 | `RABBITMQ_VHOST`    | Virtual host в RabbitMQ.      | `/`         |
+
+### 5.4. Kafka
+
+| Переменная   | Описание           | Пример      |
+|--------------|--------------------|-------------|
+| `KAFKA_HOST` | Хост Kafka брокера | `localhost` |
+| `KAFKA_PORT` | Порт Kafka брокера | `9092`      |

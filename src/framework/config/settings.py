@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str
     RABBITMQ_VHOST: str
+    KAFKA_HOST: str
+    KAFKA_PORT: int
 
     @property
     def DB_URL(self) -> str:
