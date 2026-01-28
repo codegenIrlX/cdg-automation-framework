@@ -107,58 +107,58 @@ services:
     restart: unless-stopped
     networks: [cdg-network]
 
-  camunda:
-    image: camunda/camunda-bpm-platform:run-latest
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "127.0.0.1:${CAMUNDA_PORT:-8088}:8080"
-    environment:
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      SPRING_DATASOURCE_URL: ${CAMUNDA_JDBC_URL}
-      SPRING_DATASOURCE_USERNAME: ${CAMUNDA_JDBC_USER}
-      SPRING_DATASOURCE_PASSWORD: ${CAMUNDA_JDBC_PASSWORD}
-
-      WAIT_FOR: postgres:5432
-      WAIT_FOR_TIMEOUT: 60
-
-      CAMUNDA_BPM_RUN_CORS_ENABLED: "true"
-      CAMUNDA_BPM_RUN_CORS_ALLOWED_ORIGINS: ${CAMUNDA_CORS_ALLOWED_ORIGINS}
-    volumes:
-      - ./init/bpmn:/camunda/configuration/resources:ro
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "(command -v wget >/dev/null 2>&1 && wget -qO- http://localhost:8080/engine-rest/engine >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/engine-rest/engine >/dev/null 2>&1)"
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 30s
-    restart: unless-stopped
-    networks: [cdg-network]
-
-  excamad:
-    image: kotovdenis/excamad:latest
-    depends_on:
-      camunda:
-        condition: service_healthy
-    ports:
-      - "127.0.0.1:${EXCAMAD_PORT:-8089}:8080"
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "(command -v wget >/dev/null 2>&1 && wget -q --spider http://localhost:8080/ >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/ >/dev/null 2>&1)"
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 10s
-    restart: unless-stopped
-    networks: [cdg-network]
+#  camunda:
+#    image: camunda/camunda-bpm-platform:run-latest
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    ports:
+#      - "127.0.0.1:${CAMUNDA_PORT:-8088}:8080"
+#    environment:
+#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+#      SPRING_DATASOURCE_URL: ${CAMUNDA_JDBC_URL}
+#      SPRING_DATASOURCE_USERNAME: ${CAMUNDA_JDBC_USER}
+#      SPRING_DATASOURCE_PASSWORD: ${CAMUNDA_JDBC_PASSWORD}
+#
+#      WAIT_FOR: postgres:5432
+#      WAIT_FOR_TIMEOUT: 60
+#
+#      CAMUNDA_BPM_RUN_CORS_ENABLED: "true"
+#      CAMUNDA_BPM_RUN_CORS_ALLOWED_ORIGINS: ${CAMUNDA_CORS_ALLOWED_ORIGINS}
+#    volumes:
+#      - ./init/bpmn:/camunda/configuration/resources:ro
+#    healthcheck:
+#      test:
+#        [
+#          "CMD-SHELL",
+#          "(command -v wget >/dev/null 2>&1 && wget -qO- http://localhost:8080/engine-rest/engine >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/engine-rest/engine >/dev/null 2>&1)"
+#        ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 30
+#      start_period: 30s
+#    restart: unless-stopped
+#    networks: [cdg-network]
+#
+#  excamad:
+#    image: kotovdenis/excamad:latest
+#    depends_on:
+#      camunda:
+#        condition: service_healthy
+#    ports:
+#      - "127.0.0.1:${EXCAMAD_PORT:-8089}:8080"
+#    healthcheck:
+#      test:
+#        [
+#          "CMD-SHELL",
+#          "(command -v wget >/dev/null 2>&1 && wget -q --spider http://localhost:8080/ >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/ >/dev/null 2>&1)"
+#        ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 30
+#      start_period: 10s
+#    restart: unless-stopped
+#    networks: [cdg-network]
 
 volumes:
   postgres_data:
