@@ -10,21 +10,21 @@ jobs:
 
     env:
       # --- Settings (pydantic-settings) ---
-      DB_HOST: localhost
-      DB_PORT: "5432"
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_ECHO: ${{ secrets.DB_ECHO }}
 
-      RABBITMQ_HOST: localhost
-      RABBITMQ_PORT: "5672"
+      RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+      RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
       RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
       RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
       RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
 
-      KAFKA_HOST: localhost
-      KAFKA_PORT: "9092"
+      KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
+      KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
 
       # --- Camunda ---
       CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
