@@ -1,12 +1,14 @@
 import uuid
 
+import pycamunda
 import pytest
+from confluent_kafka import KafkaException
 from loguru import logger
 from pika.exceptions import AMQPConnectionError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from framework.clients import RabbitMQClient
+from framework.clients import CamundaClient, KafkaClient, RabbitMQClient
 from framework.db import create_engine_from_dsn, create_session_factory
 from framework.config import settings
 from domains.api.plusofon.balance import BalanceService
@@ -65,3 +67,43 @@ def rabbitmq_queue(rabbitmq_client: RabbitMQClient) -> str:
     queue_name = f"test_queue_{uuid.uuid4()}"
     yield queue_name
     rabbitmq_client.delete_queue(queue_name)
+
+
+@pytest.fixture()
+def kafka_client() -> KafkaClient:
+    client = KafkaClient.from_settings(settings)
+
+    try:
+        client.connect()
+    except KafkaException:
+        pytest.skip("Kafka недоступна")
+
+    yield client
+    client.close()
+
+
+@pytest.fixture()
+def kafka_topic(kafka_client: KafkaClient) -> str:
+    topic_name = f"test_topic_{uuid.uuid4()}"
+    kafka_client.create_topic(topic_name)
+    yield topic_name
+    try:
+        kafka_client.delete_topic(topic_name)
+    except KafkaException:
+        pass
+
+
+@pytest.fixture()
+def camunda_client() -> CamundaClient:
+    if not settings.CAMUNDA_BASE_URL:
+        pytest.skip("CAMUNDA_BASE_URL не задан")
+
+    client = CamundaClient.from_settings(settings)
+    try:
+        client.connect()
+        client.ping()
+    except pycamunda.PyCamundaException:
+        pytest.skip("Camunda недоступна")
+
+    yield client
+    client.close()

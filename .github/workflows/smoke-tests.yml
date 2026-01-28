@@ -8,40 +8,58 @@ jobs:
   smoke_with_allure_results:
     runs-on: ubuntu-latest
 
+    env:
+      # --- Settings (pydantic-settings) ---
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_ECHO: ${{ secrets.DB_ECHO }}
+
+      RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+      RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+      RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+      RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
+
+      KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
+      KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
+
+      # --- Camunda ---
+      CAMUNDA_BASE_URL: ${{ secrets.CAMUNDA_BASE_URL }}
+      CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
+      CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
+      CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
+      CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Docker Compose
+      - name: Compose command resolver
+        shell: bash
         run: |
-          if ! command -v docker-compose >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y docker-compose
+          if command -v docker-compose >/dev/null 2>&1; then
+            echo "DC=docker-compose" >> $GITHUB_ENV
+          else
+            echo "DC=docker compose" >> $GITHUB_ENV
           fi
 
       - name: Start Docker services
-        env:
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
-          POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-          RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
-        run: docker-compose up -d
+        run: ${{ env.DC }} up -d postgres rabbitmq zookeeper kafka kafka-ui camunda
 
       - name: Wait for Postgres to be ready
-        env:
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
-          POSTGRES_USER: ${{ secrets.DB_USER }}
+        shell: bash
         run: |
           for _ in $(seq 1 30); do
-            if docker-compose exec -T postgres pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"; then
+            if ${{ env.DC }} exec -T postgres pg_isready -U "${DB_USER}" -d "${DB_NAME}"; then
               exit 0
             fi
             sleep 2
           done
           echo "Postgres did not become ready in time" >&2
-          docker-compose logs postgres
+          ${{ env.DC }} logs postgres
           exit 1
 
       - name: Set up Python
@@ -62,16 +80,16 @@ jobs:
           TIMEOUT_SECONDS: ${{ secrets.TIMEOUT_SECONDS }}
           VERIFY_SSL: ${{ secrets.VERIFY_SSL }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_ECHO: ${{ secrets.DB_ECHO }}
-          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
-          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
-          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-          RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
         run: |
-          pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
+          pytest -m smoke -vv -s \
+            --log-cli-level="${LOG_LEVEL:-INFO}" \
+            --alluredir=allure-results
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+          retention-days: 7

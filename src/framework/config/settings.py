@@ -15,6 +15,17 @@ def _resolve_env_files() -> tuple[str, ...]:
     return (".env",)
 
 
+def _get_env_value(name: str) -> str | None:
+    value = os.getenv(name)
+    if value is not None:
+        return value
+    for env_file in _resolve_env_files():
+        env_value = dotenv_values(env_file).get(name)
+        if env_value:
+            return env_value
+    return None
+
+
 class Settings(BaseSettings):
     """Настройки запуска из переменных окружения и файла .env."""
 
@@ -42,6 +53,16 @@ class Settings(BaseSettings):
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str
     RABBITMQ_VHOST: str
+    KAFKA_HOST: str
+    KAFKA_PORT: int
+
+    @property
+    def CAMUNDA_BASE_URL(self) -> str | None:
+        return _get_env_value("CAMUNDA_BASE_URL")
+
+    @property
+    def CAMUNDA_AUTH_TOKEN(self) -> str | None:
+        return _get_env_value("CAMUNDA_AUTH_TOKEN")
 
     @property
     def DB_URL(self) -> str:

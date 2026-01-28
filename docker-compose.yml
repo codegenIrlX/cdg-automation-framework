@@ -1,67 +1,98 @@
-version: "3.9"
+# CDG Automation Framework — Local-only infrastructure
+# Compose spec: https://docs.docker.com/compose/compose-file/
+#
+# IMPORTANT:
+# - All published ports are bound to 127.0.0.1 (localhost-only).
+# - No host networking is used.
+# - Service-to-service traffic goes over the private Docker bridge network "cdg-network".
+
+# -----------------------------
+# Reusable blocks (YAML anchors)
+# -----------------------------
+x-service-defaults: &service_defaults
+  restart: unless-stopped
+  networks:
+    - cdg-network
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-health-defaults: &health_defaults
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 20s
 
 services:
+  # -----------------
+  # Database: Postgres
+  # -----------------
   postgres:
+    <<: *service_defaults
     image: postgres:16-alpine
-    container_name: postgres
+    container_name: cdg-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    # Host access for local dev/tests ONLY (bound to localhost).
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init/db:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    restart: unless-stopped
+      <<: *health_defaults
 
+  # ----------------
+  # Broker: RabbitMQ
+  # ----------------
   rabbitmq:
+    <<: *service_defaults
     image: rabbitmq:3-management
-    container_name: rabbitmq
+    container_name: cdg-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST}
+    # AMQP + Management UI (localhost-only).
     ports:
-      - "127.0.0.1:5672:5672"
-      - "127.0.0.1:15672:15672"
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"                 # AMQP
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"    # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    restart: unless-stopped
+      <<: *health_defaults
 
-  # --- Kafka stack (ZooKeeper + Kafka + UI) ---
+  # -----------------------------
+  # Kafka stack: ZooKeeper + Kafka
+  # -----------------------------
   zookeeper:
+    <<: *service_defaults
     image: confluentinc/cp-zookeeper:7.6.1
-    container_name: zookeeper
+    container_name: cdg-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    # Usually needed for local tooling; still bound to localhost.
     ports:
-      - "127.0.0.1:2181:2181"
+      - "127.0.0.1:${ZOOKEEPER_PORT:-2181}:2181"
     healthcheck:
-      test: ["CMD", "bash", "-c", "cub zk-ready localhost:2181 20"]
+      test: ["CMD-SHELL", "cub zk-ready localhost:2181 20"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 20s
-    restart: unless-stopped
 
   kafka:
+    <<: *service_defaults
     image: confluentinc/cp-kafka:7.6.1
-    container_name: kafka
+    container_name: cdg-kafka
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -71,31 +102,31 @@ services:
 
       # Two listeners:
       # - PLAINTEXT (internal docker network): kafka:29092
-      # - PLAINTEXT_HOST (from your machine): localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      # - PLAINTEXT_HOST (from your machine): localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:${KAFKA_PORT:-9092}
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9092}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-
+    # Bind host access to localhost-only and keep container port in sync with KAFKA_PORT.
     ports:
-      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:${KAFKA_PORT:-9092}:${KAFKA_PORT:-9092}"
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list > /dev/null 2>&1"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:${KAFKA_PORT:-9092} --list > /dev/null 2>&1"]
       interval: 10s
       timeout: 10s
       retries: 20
       start_period: 30s
-    restart: unless-stopped
 
   kafka-ui:
+    <<: *service_defaults
     image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
+    container_name: cdg-kafka-ui
     depends_on:
       kafka:
         condition: service_healthy
@@ -105,10 +136,73 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       DYNAMIC_CONFIG_ENABLED: "true"
     ports:
-      - "127.0.0.1:8080:8080"
-    restart: unless-stopped
+      - "127.0.0.1:${KAFKA_UI_PORT:-8080}:8080"                 # UI (localhost-only)
+
+  # -----------------------
+  # BPM: Camunda + Excamad
+  # -----------------------
+  camunda:
+    <<: *service_defaults
+    image: camunda/camunda-bpm-platform:run-latest
+    container_name: cdg-camunda
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: ${CAMUNDA_JDBC_URL}
+      SPRING_DATASOURCE_USERNAME: ${CAMUNDA_JDBC_USER}
+      SPRING_DATASOURCE_PASSWORD: ${CAMUNDA_JDBC_PASSWORD}
+
+      # Wait for Postgres
+      WAIT_FOR: postgres:5432
+      WAIT_FOR_TIMEOUT: 60
+
+      # CORS for Excamad (browser calls)
+      CAMUNDA_BPM_RUN_CORS_ENABLED: "true"
+      CAMUNDA_BPM_RUN_CORS_ALLOWED_ORIGINS: ${CAMUNDA_CORS_ALLOWED_ORIGINS}
+    ports:
+      - "127.0.0.1:${CAMUNDA_PORT:-8088}:8080"                  # Camunda UI/REST (localhost-only)
+    volumes:
+      # Auto-deploy BPMN/DMN resources on Camunda Run startup
+      - ./init/bpmn:/camunda/configuration/resources:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "(command -v wget >/dev/null 2>&1 && wget -qO- http://localhost:8080/engine-rest/engine >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/engine-rest/engine >/dev/null 2>&1)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  excamad:
+    <<: *service_defaults
+    image: kotovdenis/excamad:latest
+    container_name: cdg-excamad
+    depends_on:
+      camunda:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${EXCAMAD_PORT:-8089}:8080"                  # Excamad UI (localhost-only)
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "(command -v wget >/dev/null 2>&1 && wget -q --spider http://localhost:8080/ >/dev/null 2>&1) || (command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:8080/ >/dev/null 2>&1)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
 
 volumes:
   postgres_data:
   rabbitmq_data:
   kafka_data:
+
+networks:
+  cdg-network:
+    name: cdg-network
+    driver: bridge
