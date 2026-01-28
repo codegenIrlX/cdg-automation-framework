@@ -23,10 +23,16 @@ jobs:
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
+          DB_ECHO: ${{ secrets.DB_ECHO }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
           RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
+
+          CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
+          CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
+          CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
+          CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
         run: docker-compose up -d
 
       - name: Wait for Postgres to be ready
@@ -62,22 +68,5 @@ jobs:
           TIMEOUT_SECONDS: ${{ secrets.TIMEOUT_SECONDS }}
           VERIFY_SSL: ${{ secrets.VERIFY_SSL }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_ECHO: ${{ secrets.DB_ECHO }}
-          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
-          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
-          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
-          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
-          RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
-          KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
-          KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
-          CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
-          CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
-          CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
-          CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
         run: |
           pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
