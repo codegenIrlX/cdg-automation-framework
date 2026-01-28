@@ -27,6 +27,7 @@ jobs:
       KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
 
       # --- Camunda ---
+      CAMUNDA_BASE_URL: ${{ secrets.CAMUNDA_BASE_URL }}
       CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
       CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
       CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
