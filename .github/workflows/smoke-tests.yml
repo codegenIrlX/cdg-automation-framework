@@ -31,8 +31,8 @@ jobs:
 
       - name: Wait for Postgres to be ready
         env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_USER: ${{ secrets.DB_USER }}
         run: |
           for _ in $(seq 1 30); do
             if docker-compose exec -T postgres pg_isready -U "${DB_USER}" -d "${DB_NAME}"; then
@@ -75,5 +75,9 @@ jobs:
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
           KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
           KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
+          CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
+          CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
+          CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
+          CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
         run: |
           pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
