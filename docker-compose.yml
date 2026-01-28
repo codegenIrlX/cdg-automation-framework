@@ -6,8 +6,6 @@
 # - No host networking is used.
 # - Service-to-service traffic goes over the private Docker bridge network "cdg-network".
 
-name: cdg-local
-
 # -----------------------------
 # Reusable blocks (YAML anchors)
 # -----------------------------
