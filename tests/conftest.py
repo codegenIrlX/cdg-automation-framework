@@ -1,5 +1,6 @@
 import uuid
 
+import pycamunda
 import pytest
 from confluent_kafka import KafkaException
 from loguru import logger
@@ -7,7 +8,7 @@ from pika.exceptions import AMQPConnectionError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from framework.clients import KafkaClient, RabbitMQClient
+from framework.clients import CamundaClient, KafkaClient, RabbitMQClient
 from framework.db import create_engine_from_dsn, create_session_factory
 from framework.config import settings
 from domains.api.plusofon.balance import BalanceService
@@ -90,3 +91,19 @@ def kafka_topic(kafka_client: KafkaClient) -> str:
         kafka_client.delete_topic(topic_name)
     except KafkaException:
         pass
+
+
+@pytest.fixture()
+def camunda_client() -> CamundaClient:
+    if not settings.CAMUNDA_BASE_URL:
+        pytest.skip("CAMUNDA_BASE_URL не задан")
+
+    client = CamundaClient.from_settings(settings)
+    try:
+        client.connect()
+        client.ping()
+    except pycamunda.PyCamundaException:
+        pytest.skip("Camunda недоступна")
+
+    yield client
+    client.close()
