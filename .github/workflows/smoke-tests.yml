@@ -75,5 +75,11 @@ jobs:
           RABBITMQ_VHOST: ${{ secrets.RABBITMQ_VHOST }}
           KAFKA_HOST: ${{ secrets.KAFKA_HOST }}
           KAFKA_PORT: ${{ secrets.KAFKA_PORT }}
+          CAMUNDA_PORT: ${{ secrets.CAMUNDA_PORT }}
+          EXCAMAD_PORT: ${{ secrets.EXCAMAD_PORT }}
+          CAMUNDA_JDBC_URL: ${{ secrets.CAMUNDA_JDBC_URL }}
+          CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
+          CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
+          CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
         run: |
           pytest -m smoke -vv -s --log-cli-level="${LOG_LEVEL:-INFO}"
