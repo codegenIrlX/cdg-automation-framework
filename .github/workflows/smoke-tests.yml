@@ -33,7 +33,9 @@ jobs:
           CAMUNDA_JDBC_USER: ${{ secrets.CAMUNDA_JDBC_USER }}
           CAMUNDA_JDBC_PASSWORD: ${{ secrets.CAMUNDA_JDBC_PASSWORD }}
           CAMUNDA_CORS_ALLOWED_ORIGINS: ${{ secrets.CAMUNDA_CORS_ALLOWED_ORIGINS }}
-        run: docker-compose up -d
+        # CI runs in a headless environment: Excamad is a local UI tool and is not required for smoke tests.
+        # Scaling it to 0 prevents docker-compose from starting the container (and failing the job on healthcheck).
+        run: docker-compose up -d --scale excamad=0
 
       - name: Wait for Postgres to be ready
         env:
@@ -41,7 +43,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.DB_USER }}
         run: |
           for _ in $(seq 1 30); do
-            if docker-compose exec -T postgres pg_isready -U "${DB_USER}" -d "${DB_NAME}"; then
+            if docker-compose exec -T postgres pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"; then
               exit 0
             fi
             sleep 2
