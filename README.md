@@ -12,6 +12,7 @@
     - [2.1. Коды статусов и ошибок](#21-коды-статусов-и-ошибок)
 - [3. Быстрый старт](#3-быстрый-старт)
     - [3.1 Отчеты Allure (Windows)](#31-отчеты-allure-windows)
+    - [3.2. Ссылки на Zephyr в Allure](#32-ссылки-на-zephyr-в-allure)
 - [4. Docker Compose](#4-docker-compose)
     - [4.1. Предусловия](#41-предусловия)
     - [4.2. Быстрый старт](#42-быстрый-старт)
@@ -95,6 +96,29 @@ allure --version
 ```bash
 pytest --alluredir=allure-results
 allure serve allure-results
+```
+
+### 3.2. Ссылки на Zephyr в Allure
+
+Для добавления кликабельных ссылок на Zephyr в отчёте Allure используется декоратор
+`@zephyr.link`. Он берёт базовый URL из переменной окружения `ZEPHYR_URL` и добавляет
+ссылки в блок Links для каждого переданного кейса.
+
+1. Укажите базовый URL Zephyr в `.env`:
+
+```ini
+ZEPHYR_URL=https://xxx.ru/browse/
+```
+
+2. Используйте декоратор в тестах:
+
+```python
+from zephyr import link
+
+
+@link({"BESAFE-123", "BESAFE-124"})
+def test_login_success():
+    ...
 ```
 
 ## 4. Docker Compose
