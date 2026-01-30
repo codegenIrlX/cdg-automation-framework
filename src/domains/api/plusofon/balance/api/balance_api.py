@@ -6,6 +6,7 @@ from loguru import logger
 from pydantic import ValidationError
 
 from domains.api.plusofon.balance.contracts import (
+    AutopayResponse,
     BalanceNoticeResponse,
     BalanceResponse,
     PaymentHistoryResponse,
@@ -43,6 +44,12 @@ class BalanceApi:
         response.raise_for_status()
         return response, self._parse_payment_history_response(response)
 
+    @allure.step("GET /api/v1/payment/autopay")
+    def get_autopay(self) -> tuple[httpx.Response, AutopayResponse]:
+        response = self._client.request("GET", "api/v1/payment/autopay")
+        response.raise_for_status()
+        return response, self._parse_autopay_response(response)
+
     @staticmethod
     def _parse_balance_response(response: httpx.Response) -> BalanceResponse:
         try:
@@ -76,6 +83,17 @@ class BalanceApi:
         except ValidationError as exc:
             logger.error(
                 "Код 422: Ошибка валидации истории операций: {error}",
+                error=exc,
+            )
+            raise
+
+    @staticmethod
+    def _parse_autopay_response(response: httpx.Response) -> AutopayResponse:
+        try:
+            return AutopayResponse.model_validate(response.json())
+        except ValidationError as exc:
+            logger.error(
+                "Код 422: Ошибка валидации ответа автоплатежа: {error}",
                 error=exc,
             )
             raise

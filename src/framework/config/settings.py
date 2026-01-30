@@ -37,6 +37,7 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str | None = None
     BASE_URL: str
+    ZEPHYR_URL: str | None = None
     API_TOKEN: str | None
     CLIENT_ID: str
     TIMEOUT_SECONDS: float

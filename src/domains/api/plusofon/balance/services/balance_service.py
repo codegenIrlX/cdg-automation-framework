@@ -5,6 +5,7 @@ import httpx
 
 from domains.api.plusofon.balance.api.balance_api import BalanceApi
 from domains.api.plusofon.balance.contracts import (
+    AutopayResponse,
     BalanceNoticeResponse,
     BalanceResponse,
     PaymentHistoryResponse,
@@ -30,3 +31,7 @@ class BalanceService:
         self, operation_type: str
     ) -> tuple[httpx.Response, PaymentHistoryResponse]:
         return self._api.get_payment_history(operation_type)
+
+    @allure.step("Получить статус автоплатежа")
+    def get_autopay(self) -> tuple[httpx.Response, AutopayResponse]:
+        return self._api.get_autopay()
